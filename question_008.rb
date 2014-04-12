@@ -16,3 +16,5 @@ end
 i_unity_diff = a.diff.each_with_index.collect{|d,i| i if d == 1}.compact
 
 puts i_unity_diff
+
+# The time complexity for this algorithm is O(n), where n is the length of the array.

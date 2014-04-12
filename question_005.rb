@@ -16,13 +16,20 @@ class String
       end
       c = c.join.split("_")
       n = c.collect{|e| e.length}.max || 0
-      p = c.find{|e| e.length == n} if n > p.length
+      if n > p.length
+        p_new = c.find{|e| e.length == n}
+        # Validate that p_new is a palindrome.
+        p = p_new if p_new == p_new.reverse
+      end
+      
       s2.rotate!
     end
     p
   end
 end
 
-s = "ABCBAHELLOHOWRACECARAREYOUIAMAIDOINGGOOD"
+s = ["abacdgfdcaba","ABCBAHELLOHOWRACECARAREYOUIAMAIDOINGGOOD"]
 
-puts "Largest Palindrome: \"#{s.largest_palindrome}\""
+s.each do |s|
+  puts "Largest Palindrome: \"#{s.largest_palindrome}\""
+end

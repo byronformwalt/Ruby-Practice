@@ -23,7 +23,8 @@ class String
   end
 end
 
-s = ["habacdedcabag","abacdgfdcaba","ABCBAHELLOHOWRACECARAREYOUIAMAIDOINGGOOD"]
+s = ["rabaraa","forgeeksskeegfor","habacdedcabag","abacdgfdcaba",
+  "ABCBAHELLOHOWRACECARAREYOUIAMAIDOINGGOOD"]
 
 s.each do |s|
   puts "Largest Palindrome: \"#{s.largest_palindrome}\""

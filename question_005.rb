@@ -23,8 +23,7 @@ class String
   end
 end
 
-s = ["","a","aa","rabaraa","forgeeksskeegfor","habacdedcabag",
-  "abacdgfdcaba",
+s = ["","a","aa","rabaraa","forgeeksskeegfor","habacdedcabag","abacdgfdcaba",
   "ABCBAHELLOHOWRACECARAREYOUIAMAIDOINGGOOD"]
 
 s.each do |s|

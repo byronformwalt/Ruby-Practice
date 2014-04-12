@@ -24,7 +24,7 @@
 # This question specifies a C# implementation, but I will implement this in Ruby.
 
 class Array
-  def print_sum_combinations(sum)
+  def sum_combinations(sum)
     numbers = self
     indices = (0..numbers.length-1).to_a
 
@@ -40,5 +40,11 @@ class Array
   end
 end
 
-p [1, 1, 2, 2, 4].print_sum_combinations(4)
+def print_sum_combinations(numbers,sum)
+  numbers.sum_combinations(sum).each do |s|
+    p s
+  end
+end
+
+print_sum_combinations([1, 1, 2, 2, 4],4)
 

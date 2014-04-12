@@ -9,12 +9,9 @@ class String
     s1  = self.split("")
     s2  = s1.reverse
     p   = ""
-    n   = 0
-    n > p.length
     (s2.length/2 + 1).times do |i|
       # Determine the max length of aligned letters.
       c = s1.each_with_index.collect do |v1,j|
-        #puts "v1: #{v1}, v2: #{q2[j]}"
         v1 == s2[j] ? v1 : "_"
       end
       c = c.join.split("_")

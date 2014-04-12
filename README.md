@@ -1,4 +1,4 @@
-TopTal-Technical-Interviews
+Practicing Ruby
 ===========================
 
-Repository for TopTal Technical Interviews and Screening Projects
+Repository for practicing Ruby skills and idoms on various classic algorithm problems.

@@ -23,17 +23,22 @@
 #ref: http://www.careercup.com/page?pid=software-engineer-in-test-interview-questions
 # This question specifies a C# implementation, but I will implement this in Ruby.
 
-sum = 4
-numbers = [1, 1, 2, 2, 4]
-indices = (0..numbers.length-1).to_a
+class Array
+  def print_sum_combinations(sum)
+    numbers = self
+    indices = (0..numbers.length-1).to_a
 
-q = 1.upto(numbers.length).collect do |n|
-  s = indices.combination(n).collect do |a|
-    a if a.inject(0) {|t,i| t += numbers[i]} == sum
-  end.compact
-  s.empty? ? nil : s
-end.compact
-solution = []
-q.each{|v| v.each{|r| solution << r}}
-p solution
+    q = 1.upto(numbers.length).collect do |n|
+      s = indices.combination(n).collect do |a|
+        a if a.inject(0) {|t,i| t += numbers[i]} == sum
+      end.compact
+      s.empty? ? nil : s
+    end.compact
+    solution = []
+    q.each{|v| v.each{|r| solution << r}}
+    solution    
+  end
+end
+
+p [1, 1, 2, 2, 4].print_sum_combinations(4)
 

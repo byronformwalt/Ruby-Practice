@@ -5,6 +5,7 @@ require 'set'
 # Imagine you have a 5x5 matrix containing integers... If any of the elements in this original matrix is 0, then your resultant matrix should have the corresponding row and column filled with 0s. For e.g. if 1st element of 1st row, 2nd element of 2nd row......up to 5th element of 5th row are all 0s, then your resultant 5x5 matrix should be all 0s. Your code should be flexible and work for any size of matrix (not just with 5x5).
 
 # ref: http://www.careercup.com/page?pid=software-engineer-in-test-interview-questions
+# A more general approach (modify the Matrix class)
 
 class Matrix
   

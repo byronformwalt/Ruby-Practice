@@ -9,7 +9,7 @@ class String
     s1  = self.split("")
     s2  = s1.reverse
     p   = ""
-    (s2.length-1).times do |i|
+    (s2.length).times do |i|
       # Determine the max length of aligned letters.
       c = s1.each_with_index.collect do |v1,j|
         v1 == s2[j] ? v1 : "_"
@@ -23,7 +23,8 @@ class String
   end
 end
 
-s = ["rabaraa","forgeeksskeegfor","habacdedcabag","abacdgfdcaba",
+s = ["","a","aa","rabaraa","forgeeksskeegfor","habacdedcabag",
+  "abacdgfdcaba",
   "ABCBAHELLOHOWRACECARAREYOUIAMAIDOINGGOOD"]
 
 s.each do |s|

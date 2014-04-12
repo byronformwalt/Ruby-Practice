@@ -43,15 +43,12 @@ class Array
       end
       s
     end
-
     block_sizes = blocks.transpose[0]
     a_max = block_sizes.max
     i_max = block_sizes.find_index{|a| a == a_max}
     w,h = blocks[i_max][1..2]
     j,k = i[i_max][0..1]
-
-    puts "The largest contiguous block is at (#{j},#{k}) and measures #{h} x #{w}"
- 
+    [j,k,h,w]
   end
 end
 
@@ -103,6 +100,7 @@ img = [
 
 img.each do |b|
   puts "\nExamining block: #{b}\n\n"
-  b.find_largest_block
+  j,k,h,w = b.find_largest_block
+  puts "The largest contiguous block is at (#{j},#{k}) and measures #{h} x #{w}"
 end
 

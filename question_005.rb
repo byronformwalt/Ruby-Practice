@@ -21,7 +21,6 @@ class String
         # Validate that p_new is a palindrome.
         p = p_new if p_new == p_new.reverse
       end
-      
       s2.rotate!
     end
     p

@@ -22,11 +22,11 @@ class String
     end
     
     s = self.split("-").join.split("")
-    s.collect{|v| @pad[v]}.join
+    s.collect{|v| @pad[v.upcase]}.join
   end
 end
 
-numbers = ["1-800-COM-CAST"]
+numbers = ["1-800-COM-CAST","1-800-comcast","321-fiddley","a really stupid number"]
 
 numbers.each do |n|
   puts "#{n} -> #{n.alphanum_to_num}"

@@ -45,5 +45,5 @@ a =
 }
 a.each_pair do |v,a|
   i1,i2 = a.find_range_of_int(v)
-  puts "{#{i1},#{i2}}"
+  puts "a: #{a}, v: #{v} --> {#{i1},#{i2}}"
 end

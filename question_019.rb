@@ -11,42 +11,31 @@
 # o/p: False
 
 
+# Perfect squares follow a difference pattern:
+# 0 => 0
+# 1 => 1 => 1 difference from 0**2
+# 2 => 4 => 3 difference from 1**2
+# 3 => 9 => 5 difference from 2**2
+# 4 => 16 => 7 difference from 3**2
+# .
+# .
+# .
+#
+# I will exploit this pattern, as in the preferred solution.
+
 class Fixnum
   def perfect_square?
+    delta = 1
     v = 0
-    i = 0
     while v < self do
-      i += 1
-      v = i.square
+      v += delta
+      delta += 2
     end
     v == self
   end
-  
-  def square
-    # Square a number without doing multiplication.
-    v = 0
-    for i in (1..self) do
-      v += self
-    end
-    v
-  end
-  
-  def div2
-    # Divide by 2 without doing division.
-    y = self
-    i = 0
-    while y > 0
-      i += 1
-      y -= 2
-      i -= 1 if y == 1
-    end
-    i
-  end
-  
 end
 
-
-x = [1,3,4,5,7,9,25,32,48,100]
+x = [-9,-1,0,1,3,4,5,7,9,25,32,48,64,100,225]
 
 x.each do |v|
   s = v.perfect_square? ? "" : " not"

@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby 
 
 # Find the first non-repeating character in a string and return its zero-based position.
+# A repeating character is a character that occurs multiple times in succession within 
+# the same string.
 
 class String
   def index_of_first_nonrepeating

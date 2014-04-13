@@ -46,5 +46,15 @@ def print_sum_combinations(numbers,sum)
   end
 end
 
-print_sum_combinations([1, 1, 2, 2, 4],4)
+tests = 
+[
+  [[1,1,2,2,4],4],
+  [[1,7,3,4,5,6,2],7]
+]
+
+tests.each do |t|
+  puts "numbers: #{t[0]}, sum: #{t[1]}"
+  print_sum_combinations(t[0],t[1])
+  puts
+end
 

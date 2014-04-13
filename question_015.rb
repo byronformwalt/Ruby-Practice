@@ -9,9 +9,31 @@
 # Complexity should be less than O(n)
 
 class Array
+  
+  def find_first(v,depth = 0,sign = 1)
+    n = self.length
+    p = (n/2.0).ceil - 1
+    return -1 if depth > 8
+    return p if self[p] == v && (n == 1 || self[p-1] != v)
+    return -1 if n == 1
+    i = self[0..p].find_first(v,depth + 1,sign)
+    return i if i >= 0
+    i = self[p+1..-1].find_first(v,depth + 1,sign)
+    return -1 if i < 0
+    r = p + 1 + i 
+    return r
+  end
+  
+  def find_last(v,depth = 0)
+    p = self.reverse.find_first(v,depth,sign = -1)
+    p = p < 0 ? p : self.length - 1 - p
+    return p
+  end
+  
   def find_range_of_int(v)
-    i1 = self.find_index(v) || -1
-    i2 = i1 < 0 ? -1 : self.length - 1 - self.reverse.find_index(v)
+    i1 = self.find_first(v)
+    i2 = self[i1+1..-1].find_last(v)
+    i2 = i2 < 0 ? i2 : i2 + i1 + 1
     [i1,i2]
   end
 end

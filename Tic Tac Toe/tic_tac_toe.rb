@@ -48,7 +48,7 @@ class Board < Array
     end
     pos
   end
-  
+  ha
   def select_any_corner
     pos = []
     0.upto(2) do |j| 

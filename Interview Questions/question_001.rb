@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# Overload the << and >> operators to rotate the characters in a string.
 
 example = "Mircrosoft"
 

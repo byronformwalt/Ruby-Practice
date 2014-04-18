@@ -1,5 +1,4 @@
-Quarto Challenge: 
-April 2014 Gamathon @ hackerrank.com
+Quarto Challenge: April 2014 Gamathon @ hackerrank.com
 =================================================
 
 Beginning April 18, I will be participating in a 9-day challenge to competitively code a 

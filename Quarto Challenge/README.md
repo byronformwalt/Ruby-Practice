@@ -16,3 +16,5 @@ Basically, this game is a combination of Uno and Connect Four.
 
 I will begin writing my solution tomorrow morning at 1030 MDT when the competition 
 officially begins.
+
+Once the competition closes and the leaderboard is locked, I will push my solution to this repository.

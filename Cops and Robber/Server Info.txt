@@ -1,0 +1,93 @@
+Thu Apr 17 03:50:58 UTC 2014
+/game-player2-4zpu8hapYZ0uUP1t0NJNAdSGlsbQGEZC
+Linux ip-10-10-158-250.ec2.internal 3.11.0-19-generic #33-Ubuntu SMP Tue Mar 11 18:48:34 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux
+ruby 1.9.3p194 (2012-04-20 revision 35410) [x86_64-linux]
+/usr/bin/ruby
+error00001.err
+input00001.in
+output00001.out
+solution.rb
+state.txt
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.1  26960  2712 ?        Ss   03:13   0:01 /sbin/init
+root         2  0.0  0.0      0     0 ?        S    03:13   0:00 [kthreadd]
+root         3  0.0  0.0      0     0 ?        S    03:13   0:00 [ksoftirqd/0]
+root         4  0.0  0.0      0     0 ?        S    03:13   0:00 [kworker/0:0]
+root         5  0.0  0.0      0     0 ?        S<   03:13   0:00 [kworker/0:0H]
+root         6  0.0  0.0      0     0 ?        S    03:13   0:00 [kworker/u4:0]
+root         7  0.0  0.0      0     0 ?        S    03:13   0:00 [migration/0]
+root         8  0.0  0.0      0     0 ?        S    03:13   0:00 [rcu_bh]
+root         9  0.0  0.0      0     0 ?        S    03:13   0:00 [rcuob/0]
+root        10  0.0  0.0      0     0 ?        S    03:13   0:00 [rcuob/1]
+root        11  0.0  0.0      0     0 ?        S    03:13   0:00 [rcu_sched]
+root        12  0.0  0.0      0     0 ?        S    03:13   0:00 [rcuos/0]
+root        13  0.0  0.0      0     0 ?        S    03:13   0:00 [rcuos/1]
+root        14  0.0  0.0      0     0 ?        S    03:13   0:00 [watchdog/0]
+root        15  0.0  0.0      0     0 ?        S    03:13   0:00 [watchdog/1]
+root        16  0.0  0.0      0     0 ?        S    03:13   0:00 [migration/1]
+root        17  0.0  0.0      0     0 ?        S    03:13   0:00 [ksoftirqd/1]
+root        18  0.0  0.0      0     0 ?        S    03:13   0:00 [kworker/1:0]
+root        19  0.0  0.0      0     0 ?        S<   03:13   0:00 [kworker/1:0H]
+root        20  0.0  0.0      0     0 ?        S<   03:13   0:00 [khelper]
+root        21  0.0  0.0      0     0 ?        S    03:13   0:00 [kdevtmpfs]
+root        22  0.0  0.0      0     0 ?        S<   03:13   0:00 [netns]
+root        23  0.0  0.0      0     0 ?        S    03:13   0:00 [xenwatch]
+root        24  0.0  0.0      0     0 ?        S    03:13   0:00 [xenbus]
+root        25  0.0  0.0      0     0 ?        S<   03:13   0:00 [writeback]
+root        26  0.0  0.0      0     0 ?        S<   03:13   0:00 [kintegrityd]
+root        27  0.0  0.0      0     0 ?        S<   03:13   0:00 [bioset]
+root        28  0.0  0.0      0     0 ?        S<   03:13   0:00 [kworker/u5:0]
+root        29  0.0  0.0      0     0 ?        S<   03:13   0:00 [kblockd]
+root        30  0.0  0.0      0     0 ?        S    03:13   0:00 [kworker/0:1]
+root        31  0.0  0.0      0     0 ?        S<   03:13   0:00 [ata_sff]
+root        32  0.0  0.0      0     0 ?        S    03:13   0:00 [khubd]
+root        33  0.0  0.0      0     0 ?        S<   03:13   0:00 [md]
+root        34  0.0  0.0      0     0 ?        S<   03:13   0:00 [devfreq_wq]
+root        36  0.0  0.0      0     0 ?        S    03:13   0:00 [khungtaskd]
+root        37  0.0  0.0      0     0 ?        S    03:13   0:00 [kswapd0]
+root        38  0.0  0.0      0     0 ?        SN   03:13   0:00 [ksmd]
+root        39  0.0  0.0      0     0 ?        S    03:13   0:00 [fsnotify_mark]
+root        40  0.0  0.0      0     0 ?        S    03:13   0:00 [ecryptfs-kthrea]
+root        41  0.0  0.0      0     0 ?        S<   03:13   0:00 [crypto]
+root        53  0.0  0.0      0     0 ?        S<   03:13   0:00 [kthrotld]
+root        54  0.0  0.0      0     0 ?        S    03:13   0:00 [kworker/u4:1]
+root        55  0.0  0.0      0     0 ?        S    03:13   0:00 [khvcd]
+root        56  0.0  0.0      0     0 ?        S    03:13   0:00 [kworker/1:1]
+root        75  0.0  0.0      0     0 ?        S<   03:13   0:00 [deferwq]
+root        76  0.0  0.0      0     0 ?        S<   03:13   0:00 [charger_manager]
+root       178  0.0  0.0      0     0 ?        S    03:13   0:00 [jbd2/xvda1-8]
+root       179  0.0  0.0      0     0 ?        S<   03:13   0:00 [ext4-rsv-conver]
+root       180  0.0  0.0      0     0 ?        S<   03:13   0:00 [ext4-unrsv-conv]
+root       340  0.0  0.0  17320   636 ?        S    03:13   0:00 upstart-udev-bridge --daemon
+root       346  0.0  0.1  41148  1816 ?        Ss   03:13   0:00 /lib/systemd/systemd-udevd --daemon
+root       429  0.0  0.0  15260   640 ?        S    03:13   0:00 upstart-socket-bridge --daemon
+root       517  0.0  0.1  10236  2816 ?        Ss   03:13   0:00 dhclient -1 -v -pf /run/dhclient.eth0.pid -lf /var/lib/dhcp/dhclient.eth0.leases eth0
+root       816  0.0  0.0  15272   632 ?        S    03:14   0:00 upstart-file-bridge --daemon
+syslog     823  0.0  0.0 251708  1516 ?        Sl   03:14   0:00 rsyslogd -c5
+102        836  0.0  0.0  30484  1240 ?        Ss   03:14   0:00 dbus-daemon --system --fork
+root       885  0.0  0.0  28624  1424 ?        Ss   03:14   0:00 /lib/systemd/systemd-logind
+root       917  0.0  0.0  14788   960 tty4     Ss+  03:14   0:00 /sbin/getty -8 38400 tty4
+root       924  0.0  0.0  14788   956 tty5     Ss+  03:14   0:00 /sbin/getty -8 38400 tty5
+root       934  0.0  0.0  14788   964 tty2     Ss+  03:14   0:00 /sbin/getty -8 38400 tty2
+nobody     935  0.0  0.0  14972   832 ?        Ss   03:14   0:00 /usr/bin/gdomap -I /var/run/gdomap.pid -p
+root       937  0.0  0.0  14788   952 tty3     Ss+  03:14   0:00 /sbin/getty -8 38400 tty3
+root       939  0.0  0.0  14788   952 tty6     Ss+  03:14   0:00 /sbin/getty -8 38400 tty6
+root       956  0.0  0.0   4376   664 ?        Ss   03:14   0:00 acpid -c /etc/acpi/events -s /var/run/acpid.socket
+root       967  0.0  0.0  25804  1092 ?        Ss   03:14   0:00 cron
+daemon     969  0.0  0.0  19124   164 ?        Ss   03:14   0:00 atd
+root       972  0.0  0.1  61092  2976 ?        Ss   03:14   0:00 /usr/sbin/sshd -D
+root       976  0.5  0.0  12936   768 ?        Ss   03:14   0:12 /usr/sbin/ninja /etc/ninja/ninja.conf
+whoopsie  1043  0.0  0.2 337384  3768 ?        Ssl  03:14   0:00 whoopsie
+root      1051  0.0  0.0  14788   956 tty1     Ss+  03:14   0:00 /sbin/getty -8 38400 tty1
+root      1093  0.0  0.0      0     0 ?        S    03:14   0:00 [kauditd]
+root      1240  0.0  0.0   4440   624 ?        Ss   03:14   0:00 /bin/sh -e -c start-stop-daemon --start --chuid root --chdir /opt/checker/ --make-pidfile --pidfile /var/run/codechecker.pid --exec /opt/checker/worker >> /var/log/codechecker/codechecker.log 2>&1 /bin/sh
+root      1241  0.0  0.3 127068  6868 ?        S    03:14   0:00 /opt/checker/worker
+root      1243  0.0  0.2 200948  4528 ?        S    03:14   0:00 /opt/checker/worker
+root      1244  0.0  0.3 202720  6892 ?        S    03:14   0:00 /opt/checker/worker
+root      1246  0.0  0.3 202024  6324 ?        S    03:14   0:00 /opt/checker/worker
+root      9959  0.0  0.0      0     0 ?        S<   03:41   0:00 [kworker/u5:1]
+root     15551  0.5  0.2 202024  5136 ?        S    03:50   0:00 /opt/checker/worker
+11844    15566  0.0  0.1 202020  3400 ?        S    03:50   0:00 /opt/checker/worker
+11844    15567  0.0  0.0   4440   656 ?        S    03:50   0:00 sh -c /usr/bin/ruby1.9.3 /game-player2-4zpu8hapYZ0uUP1t0NJNAdSGlsbQGEZC/solution.rb
+11844    15568  0.0  0.2  27768  4764 ?        Sl   03:50   0:00 /usr/bin/ruby1.9.3 /game-player2-4zpu8hapYZ0uUP1t0NJNAdSGlsbQGEZC/solution.rb
+11844    15583  0.0  0.0  15568  1164 ?        R    03:50   0:00 ps uax

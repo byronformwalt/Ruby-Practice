@@ -1,5 +1,4 @@
 Quarto Challenge: 
-====
 April 2014 Gamathon @ hackerrank.com
 =================================================
 

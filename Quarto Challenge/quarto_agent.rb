@@ -83,6 +83,11 @@ class Agent
       raise "TIMEOUT"
       return randomize_decision(board,player)
     end      
+    f_check = false
+    if level > 0 && board[2,2] >= 0 && board.next_piece == 2
+      puts "check"
+      f_check = true
+    end
       
     vacancies = board.vacancies
     # If this is the first move of the game, select a corner at 
@@ -104,9 +109,14 @@ class Agent
     vacancies.each do |j,k|
       board.place(j,k)
       w = board.winner
-      c << [j,k] if w == 0 || w == player
+      # puts "(#{j},#{k}) w: #{w}, player: #{player}" if f_check
+      c << [j,k] if w == 0 || w == player 
+      puts "c: #{c}" # if f_check
       board.undo
     end
+    # puts "c: #{c}" if f_check
+    # puts "player: #{player}" if f_check
+    # puts "#{board}" if f_check
     if !c.empty?
       score = {1 => Score.new,2 => Score.new}
       score[player] = Score.new(1)
@@ -169,11 +179,12 @@ class Agent
     c = {}
     board.vacancies.each do |j,k|
       # if level == 0
-      #   j,k = [3,2]
+      #   j,k = [2,2]
+      #   puts "#{board}"
       # end
       board.unused.each do |np|
         # if level == 0
-        #   np = 6
+        #   np = 2
         # end
         board.place(j,k)        
         board.next_piece = np
@@ -194,8 +205,8 @@ class Agent
         # end
       end
       # if level == 0
-     #    break
-     #  end
+      #   break
+      # end
     end
     # if level == 0
     #   p c
@@ -206,23 +217,32 @@ class Agent
       y = b[1][player].eval - b[1][3-player].eval
       x <=> y
     end[1]
-    d = c.collect{|a| a[1] == score ? a : nil}.compact
+    
+    # puts "score: #{score}"
+    
+    d = c.collect do |a| 
+      x = a[1][player].eval - a[1][3-player].eval
+      y = score[player].eval - score[3-player].eval
+      x == y ? a : nil
+    end.compact
+    
     # Narrow the selection by maximizing the frequency of the score.
-    if score[player].eval <= 0
+    if score[player].eval - score[3 - player].eval <= 0
       # Minimize the frequency for bad scores.
       freq = d.min{|a,b| a[1][player][1] <=> 
-        b[1][player][1]}[1][player][1]
+      b[1][player][1]}[1][player][1]
     else
       # Maximize the frequency for non-negative scores.
       freq = d.max{|a,b| a[1][player][1] <=> 
-        b[1][player][1]}[1][player][1]
+      b[1][player][1]}[1][player][1]
     end    
-    c = d.collect{|a| a[1][player][1] == freq ? a[0] : nil}.compact
+    c = d.collect{|a| a[1][player][1] == freq ? a : nil}.compact  
     
     # Randomly select from the list of equally good decisions.
     c = c[rand(c.length)]
-    place = c[0]
-    pick = c[1]
+    score = c[1]
+    place = c[0][0]
+    pick = c[0][1]
     # if level == 0
     #   puts "place: #{place}, pick: #{pick}, score: #{score}"
     #   puts "player: #{player}"
@@ -273,7 +293,7 @@ class Agent
       place,pick,score = decide(@board,Time.now,0,@player,
       max_time: 10, max_level: max_level)
       
-      puts "player: #{@player} place: #{place}, pick: #{pick}, score: #{score}"
+      # puts "player: #{@player} place: #{place}, pick: #{pick}, score: #{score}"
       j,k = place
       save_pick(pick)
       puts "#{j} #{k}"

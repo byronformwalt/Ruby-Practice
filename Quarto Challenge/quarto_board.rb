@@ -16,6 +16,7 @@ module Similarity
     # piece.  If no piece is provided, then the method will just 
     # check for the existence of a common property among the 
     # elements in the collection.
+    return false if self.empty?
     a = self.dup
     a << piece if !piece.nil?
     return false if a.any?{|v| v < 0}
@@ -46,11 +47,17 @@ class Board
   @@w << 4.times.collect{|i| [i,i]}
   # Four diagonally (0,3) to (3,0).
   @@w << 4.times.collect{|i| [i,3-i]}
+  @@w.freeze
+  W = @@w
+  
+  @@corners = [[0,0],[0,3],[3,0],[3,3]].freeze
+  CORNERS = @@corners
 
   def initialize(input = nil,mode = :pick)
     # Imports the raw data from the game engine which indicates the
     # state of the game and the nature of the decision to be made.
-    # If no input is given, then an empty board is initialized. 
+    # If no input is given, then an empty board is initialized.
+    input = nil if !input.nil? && input.empty?
     if input.nil?
       @b = 4.times.collect{Array.new(4,-1)}
       @p = Set.new((0..15).to_a)
@@ -62,8 +69,12 @@ class Board
       end
       i = mode == :pick ? input.length - 1 : input.length - 2
       @p = 4.upto(i).collect{|i| input[i].to_i}
-      @next_piece = mode == :place ? input[i] : nil
+      @next_piece = mode == :place ? input[i+1].to_i : nil
     end
+  end
+  
+  def compliment_piece(piece)
+    15 - piece
   end
   
   def []=(j,k,piece)
@@ -146,6 +157,10 @@ class Board
     pieces.each{|v| s << "#{v}\n"}
     s << "#{@next_piece}" if !@next_piece.nil?
     s
+  end
+  
+  def dup
+    Marshal.load(Marshal.dump(self))
   end
 end
 

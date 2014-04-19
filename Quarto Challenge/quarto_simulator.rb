@@ -32,22 +32,28 @@ class Game
     # Interface with a player agent.
     if !f_pick_only
       # Call on the agent to make a PLACE decision.
+      t0 = Time.now
       output = agent.execute("#{@player}\nPLACE\n" << @board)
-      puts "Player #{@player} responded to PLACE with #{output}"
+      puts "Player #{@player} responded to PLACE with #{output}" +
+      " in #{Time.now - t0} s"
       
       # Place execute the placement.
-      j,k = output
+      j,k = output.split(" ").collect{|v| v.to_i}
       raise "Invalid input." if j.nil? || k.nil?
       @board[j,k] = @board.next_piece
     end
     
-    # Call on the agent to make a PICK decision.
-    puts "#{@player}\nPICK\n" << @board
-    output = agent.execute("#{@player}\nPICK\n" << @board)
-    puts "Player #{@player} responded to PICK with #{output}"
+    if !@board.game_over?
+      # Call on the agent to make a PICK decision.
+      puts "#{@player}\nPICK\n" << @board
+      t0 = Time.now
+      output = agent.execute("#{@player}\nPICK\n" << @board)
+      puts "Player #{@player} responded to PICK with #{output}" +
+      " in #{Time.now - t0} s"
     
-    # Pick the piece selected by the agent.
-    @board.next_piece = output.to_i
+      # Pick the piece selected by the agent.
+      @board.next_piece = output.to_i
+    end
   end
   
   def play
@@ -63,10 +69,11 @@ class Game
       execute_turn(@agents[@player-1])
       @player = 3 - @player
     end
+    puts "#{@board}\n\n"
     
     winner = @board.winner
     puts "Game over."
-    if winner == 1
+    if winner == 0
       puts "Tie game." 
     else
       puts "Player #{winner} won."

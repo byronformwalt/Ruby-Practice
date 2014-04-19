@@ -20,7 +20,7 @@ module Similarity
     a = self.dup
     a << piece if !piece.nil?
     return false if a.any?{|v| v < 0}
-    inject(15){|t,a| t &= a} > 0 || inject(0){|t,a| t |= a} == 0
+    inject(15){|t,a| t &= a} > 0 || inject(0){|t,a| t |= a} < 15
   end
 end
 
@@ -30,6 +30,65 @@ end
 
 class Set
   include Similarity
+end
+
+#!/usr/bin/env ruby
+
+class Score < Array
+  def initialize(v = 0)
+    super()
+    if !v.kind_of?(Fixnum) && !v.kind_of?(Float)
+      self[0] = 0.0
+      self[1] = 0.0
+    elsif v.abs > 1
+      self[0] = 0.0
+      self[1] = 0.0
+    else
+      self[0] = v.to_f
+      self[1] = 1.0
+    end
+  end
+
+  def modify(other,sign = 1)
+    if other.kind_of?(Array)
+      if self[1] <= 0
+        v = [sign*other[0].to_f,sign*other[1].to_f]
+      elsif other[1] <= 0
+        v = self
+      else
+        v = [self[0]+sign*other[0].to_f,self[1]+sign*other[1].to_f]
+      end
+      return self if v[1] < 0 || v[0].abs > v[1]
+      s = Score.new
+      s[0] = v[0]
+      s[1] = v[1]
+      return s
+    else
+      v = self + [sign*other.to_f,sign*(1.to_f)]
+      return self + [sign*other.to_f,sign*(1.to_f)]
+    end
+  end    
+
+  def +(other)
+    v = modify(other)
+    return v
+  end
+    
+  def -(other)
+    modify(other,-1)
+  end
+  
+  def <<(a)
+    v = self + a
+    self[0] = v[0]
+    self[1] = v[1]
+    self
+  end
+  
+  def eval
+    return 0 if self[1] <= 0 || self[1] < self[0]
+    return self[0].to_f/self[1]
+  end
 end
 
 class Board
@@ -71,6 +130,7 @@ class Board
       @p = 4.upto(i).collect{|i| input[i].to_i}
       @next_piece = mode == :place ? input[i+1].to_i : nil
     end
+    @moves = []
   end
   
   def compliment_piece(piece)
@@ -82,7 +142,35 @@ class Board
     # location.
     @b[j][k] = piece
     @p.delete(piece)
+    @moves << [[j,k],piece]
     @next_piece = nil
+  end
+  
+  def next_piece=(piece)
+    # Make sure that if a different piece was already selected we
+    # move it back onto the unused pieces list before establishing
+    # the new next piece.
+    if !@next_piece.nil? 
+      if @next_piece >= 0
+        @p << @next_piece
+        @p = @p.sort
+      end
+    end
+    @next_piece = piece
+  end
+  
+  def place(j,k)
+    # Places the next piece onto the board.
+    self[j,k] = @next_piece
+  end 
+  
+  def undo
+    # Undoes the last move, restoring the state of the board.
+    return if @moves.empty?
+    place,piece = @moves.pop
+    j,k = place
+    @b[j][k] = VACANCY
+    self.next_piece = piece # Pushes the prev piece on to the stack.
   end
   
   def winner
@@ -90,6 +178,8 @@ class Board
     # 0 for a tie, or nil if the game is not over).
         
     # Test all possible ways to connect four similar items.
+    # => p @@w.collect{|c| c.collect{|j,k| @b[j][k]}}
+    # => p @@w.collect{|c| c.collect{|j,k| @b[j][k]}.similar?}
     if @@w.any?{|c| c.collect{|j,k| @b[j][k]}.similar?}
       # There is a clear winner.
       return @p.length.odd? ? 1 : 2
@@ -159,7 +249,12 @@ class Board
     s
   end
   
+  # Shallow copies make no sense for instances of this class.
   def dup
+    clone
+  end
+  
+  def clone
     Marshal.load(Marshal.dump(self))
   end
 end

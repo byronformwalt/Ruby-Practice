@@ -74,20 +74,15 @@ class Agent
     board = @board if board.nil?
     
     if level > opts[:max_level]
-      #puts "Max level exceeded.  Make a random decision."
+      # Max level exceeded.  Make a random decision.
       d = randomize_decision(board,player)
       return d
     end
     if Time.now - t_start > opts[:max_time]
-      #puts "Max time exceeded.  Make a random decision."
+      # Max time exceeded.  Make a random decision.
       raise "TIMEOUT"
       return randomize_decision(board,player)
     end      
-    f_check = false
-    if level > 0 && board[2,2] >= 0 && board.next_piece == 2
-      puts "check"
-      f_check = true
-    end
       
     vacancies = board.vacancies
     # If this is the first move of the game, select a corner at 
@@ -109,14 +104,9 @@ class Agent
     vacancies.each do |j,k|
       board.place(j,k)
       w = board.winner
-      # puts "(#{j},#{k}) w: #{w}, player: #{player}" if f_check
       c << [j,k] if w == 0 || w == player 
-      puts "c: #{c}" # if f_check
       board.undo
     end
-    # puts "c: #{c}" if f_check
-    # puts "player: #{player}" if f_check
-    # puts "#{board}" if f_check
     if !c.empty?
       score = {1 => Score.new,2 => Score.new}
       score[player] = Score.new(1)
@@ -175,13 +165,8 @@ class Agent
     # Next, check whether or not there is a way to force our 
     # opponent to create a winning situation for us in the next
     # turn.
-    #puts "Looking for a way to force a win."
     c = {}
     board.vacancies.each do |j,k|
-      # if level == 0
-      #   j,k = [2,2]
-      #   puts "#{board}"
-      # end
       board.unused.each do |np|
         # if level == 0
         #   np = 2
@@ -200,25 +185,15 @@ class Agent
           c[key][2] += score[2]
         end
         board.undo
-        # if level == 0
-        #   break
-        # end
       end
-      # if level == 0
-      #   break
-      # end
     end
-    # if level == 0
-    #   p c
-    # end
+    
     # Find the decisions that resulted in the maximum score. 
     score = c.max do |a,b| 
       x = a[1][player].eval - a[1][3-player].eval
       y = b[1][player].eval - b[1][3-player].eval
       x <=> y
     end[1]
-    
-    # puts "score: #{score}"
     
     d = c.collect do |a| 
       x = a[1][player].eval - a[1][3-player].eval
@@ -243,25 +218,9 @@ class Agent
     score = c[1]
     place = c[0][0]
     pick = c[0][1]
-    # if level == 0
-    #   puts "place: #{place}, pick: #{pick}, score: #{score}"
-    #   puts "player: #{player}"
-    # end
     return [place,pick,score]
   end
-  
-  # def pick(board)
-  #   # Determines which piece the opponent should place on the board
-  #   # in his next turn.
-  #   
-  # end
-  # 
-  # def place(piece,board)
-  #   # Determines where to best place a piece on the board, and which
-  #   # piece the opponent should place in his next turn.
-  #   
-  # end
-    
+      
   def execute
     # Based on the current state of the game, this method determines
     # how to optimally respond to the external game engine.  This
@@ -289,11 +248,9 @@ class Agent
     when :place
       n = @board.vacancies.length 
       max_level = n >= 11 ? 1 : n >= 7 ? 2 : n >= 6 ? 4 : 5
-      #puts "n: #{n} max_level: #{max_level}"
       place,pick,score = decide(@board,Time.now,0,@player,
-      max_time: 10, max_level: max_level)
+      max_time: 12, max_level: max_level)
       
-      # puts "player: #{@player} place: #{place}, pick: #{pick}, score: #{score}"
       j,k = place
       save_pick(pick)
       puts "#{j} #{k}"

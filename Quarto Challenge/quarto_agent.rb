@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-
 require 'set'
 class Fixnum
   def similar?(piece)
@@ -32,8 +31,6 @@ end
 class Set
   include Similarity
 end
-
-#!/usr/bin/env ruby
 
 class Score < Array
   def initialize(v = 0)
@@ -77,6 +74,12 @@ class Score < Array
     
   def -(other)
     modify(other,-1)
+  end
+  
+  def /(other)
+    v = self.dup
+    v[0] = self[0]/other.to_f
+    v
   end
   
   def <<(a)
@@ -127,9 +130,14 @@ class Board
       @b = 4.times.collect do |i|
         input[i].split(" ").collect{|v| v.to_i}
       end
-      i = mode == :pick ? input.length - 1 : input.length - 2
-      @p = 4.upto(i).collect{|i| input[i].to_i}
-      @next_piece = mode == :place ? input[i+1].to_i : nil
+      n = input[4].to_i
+      n_expected = n + 5 + (mode == :place ? 1 : 0)
+      if input.length != n_expected
+        warn "Input length is invalid. " +
+        "(Expected #{n_expected} lines, but got #{input.length})"
+      end
+      @p = 5.upto(n_expected-2).collect{|i| input[i].to_i}      
+      @next_piece = mode == :place ? input[n_expected-1].to_i : nil
     end
     @moves = []
   end
@@ -245,6 +253,7 @@ class Board
     pieces = @p.dup.delete(@next_piece)
     s = ""
     @b.each{|r| r.each{|v| s << "#{v} "}; s << "\n"}
+    s << "#{pieces.length}\n"
     pieces.each{|v| s << "#{v}\n"}
     s << "#{@next_piece}" if !@next_piece.nil?
     s
@@ -260,11 +269,12 @@ class Board
   end
 end
 
+
 class Agent
   MAX_RUNTIME = 5   # Max amount of time to think per decision (s).
   Report = Struct.new(:wins,:losses,:draws)
   ACTIONS = Set.new([:pick,:place])
-  DEFAULT_DECISION_OPTS = {mode: :complex,max_level: 3,max_time: 30}
+  DEFAULT_DECISION_OPTS = {mode: :complex,max_level: 6,max_time: 30}
   
   def initialize(input)
     # Initializes the agent data structure given the raw input 
@@ -275,7 +285,7 @@ class Agent
       @action = @action.downcase.to_sym
       @action = nil if !ACTIONS.member?(@action)
     end
-    @board = Board.new(input,@action)
+    @board = Board.new(input,@action) 
   end
   
   def save_pick(pick)
@@ -321,163 +331,8 @@ class Agent
     return [place,pick,score]      
   end
   
-  def decide(board = nil,t_start = Time.now,level = 0,
-    player = @player,opts = {})
-    raise "NIL PLAYER!" if player.nil?  
+  def decide
     
-    # Makes a decision about where to place a given piece on the
-    # board and which piece the opponent will place in his next
-    # turn.  An arbitrary future state of the board may be specified.
-    
-    opts = DEFAULT_DECISION_OPTS.merge(opts)
-    board = @board if board.nil?
-    
-    if level > opts[:max_level]
-      # Max level exceeded.  Make a random decision.
-      d = randomize_decision(board,player)
-      return d
-    end
-    if Time.now - t_start > opts[:max_time]
-      # Max time exceeded.  Make a random decision.
-      raise "TIMEOUT"
-      return randomize_decision(board,player)
-    end      
-      
-    vacancies = board.vacancies
-    # If this is the first move of the game, select a corner at 
-    # random and a piece that is dichotomous with this one.
-    if @board.empty?
-      place = Board::CORNERS[rand(Board::CORNERS.length)]
-      pick = board.compliment_piece(board.next_piece)
-      return [place,pick]
-    end
-    
-    # If only one other piece is on the board, randomize the move.
-    if vacancies.length == 15
-      return randomize_decision(board,player)
-    end
-    
-    # First, check whether there is a way to win/end the game in the
-    # next move.  
-    c = []
-    vacancies.each do |j,k|
-      board.place(j,k)
-      w = board.winner
-      c << [j,k] if w == 0 || w == player 
-      board.undo
-    end
-    if !c.empty?
-      score = {1 => Score.new,2 => Score.new}
-      score[player] = Score.new(1)
-      return [c[rand(c.length)],-1,score]
-    end
-    
-    # If this is the last piece in the game, just play it.
-    if vacancies.length == 1
-      pick = -1
-      place = vacancies.first
-      decision = [place,pick]
-      score = score_decision(board,decision,player)
-      return [place,pick,score]
-    end
-    
-    # Exit with a random selection if in simple mode.
-    if opts[:mode] == :simple
-      place = p[rand(p.length)]
-      u = board.unused
-      pick = u[rand(u.length)]
-      score = score_decision(board,[place,pick],player)      
-      return [place,pick,score]
-    end
-    
-    # Determine if there is a way that we can prevent our opponent 
-    # from winning if there is only one move remaining after ours.
-    if board.unused == 1
-      place = []
-      pick = board.unused
-      c = []
-      board.vacancies.each do |j,k|
-        board.place(j,k)
-        place,pick = decide(board,t_start,level + 1,3 - player, 
-        opts.merge(mode: :simple))
-        
-        if board.winner != 3 - player
-          # Our opponent did not win with this placement.
-          c << [j,k]
-        end
-        board.undo
-      end
-      
-      if c.empty?
-        # We are guaranteed to lose or tie.  Pick the location at 
-        # random.
-        l = board.vacancies
-        place = l[rand(l)]
-      else
-        # We are guaranteed to win.
-        place = c[rand(c)]
-      end
-      score = score_decision(board,[place,pick],player)
-      return [place,pick,score]
-    end
-      
-    # Next, check whether or not there is a way to force our 
-    # opponent to create a winning situation for us in the next
-    # turn.
-    c = {}
-    board.vacancies.each do |j,k|
-      board.unused.each do |np|
-        # if level == 0
-        #   np = 2
-        # end
-        board.place(j,k)        
-        board.next_piece = np
-        
-        place,pick,score = 
-        decide(board,t_start,level + 1,3 - player,opts)
-        
-        key = [[j,k],np]
-        if c[key].nil?
-          c[key] = score.dup
-        else
-          c[key][1] += score[1]
-          c[key][2] += score[2]
-        end
-        board.undo
-      end
-    end
-    
-    # Find the decisions that resulted in the maximum score. 
-    score = c.max do |a,b| 
-      x = a[1][player].eval - a[1][3-player].eval
-      y = b[1][player].eval - b[1][3-player].eval
-      x <=> y
-    end[1]
-    
-    d = c.collect do |a| 
-      x = a[1][player].eval - a[1][3-player].eval
-      y = score[player].eval - score[3-player].eval
-      x == y ? a : nil
-    end.compact
-    
-    # Narrow the selection by maximizing the frequency of the score.
-    if score[player].eval - score[3 - player].eval <= 0
-      # Minimize the frequency for bad scores.
-      freq = d.min{|a,b| a[1][player][1] <=> 
-      b[1][player][1]}[1][player][1]
-    else
-      # Maximize the frequency for non-negative scores.
-      freq = d.max{|a,b| a[1][player][1] <=> 
-      b[1][player][1]}[1][player][1]
-    end    
-    c = d.collect{|a| a[1][player][1] == freq ? a : nil}.compact  
-    
-    # Randomly select from the list of equally good decisions.
-    c = c[rand(c.length)]
-    score = c[1]
-    place = c[0][0]
-    pick = c[0][1]
-    return [place,pick,score]
   end
       
   def execute
@@ -487,28 +342,27 @@ class Agent
     # simultaneously when a placement is requested.  In this case,
     # the agent will store its pick decision on disk for recall
     # later on when it receives a request to make a pick decision.
-    
-    # Pick any piece at random if we are player 2 and the board is 
-    # empty.
-    if @player == 2 && @board.empty?
-      u = @board.unused
-      j,k = u[rand(u.length)]
-      puts "#{j} #{k}"
-      return
-    end
-    
-    # For all other cases, use our decision agent.
+    @f_abandon_analysis = false
     case @action
     when :pick
-      # Whenever we place a piece, we also picked the next one and 
-      # we saved it to disk.  Reload our decision.
-      pick = load_pick
-      puts pick
+      if @board.empty?
+        # Pick any piece at random if we are player 2 and the board 
+        # is empty.
+        u = @board.unused
+        j,k = u[rand(u.length)]
+        puts "#{j} #{k}"
+        return
+      else
+        # Whenever we place a piece, we also picked the next one 
+        # and we saved it to disk.  Reload our decision.        
+        pick = load_pick
+        puts pick
+      end
     when :place
       n = @board.vacancies.length 
-      max_level = n >= 11 ? 1 : n >= 7 ? 2 : n >= 6 ? 4 : 5
-      place,pick,score = decide(@board,Time.now,0,@player,
-      max_time: 12, max_level: max_level)
+      max_level = n >= 11 ? 1 : n >= 7 ? 2 : n >= 5 ? 7 : 8
+      place,pick,score = decide(@board,Time.now,0,
+      max_time: 10, max_level: max_level)
       
       j,k = place
       save_pick(pick)

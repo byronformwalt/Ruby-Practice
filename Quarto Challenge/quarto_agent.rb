@@ -274,7 +274,7 @@ class Agent
   MAX_RUNTIME = 5   # Max amount of time to think per decision (s).
   Report = Struct.new(:wins,:losses,:draws)
   ACTIONS = Set.new([:pick,:place])
-  DEFAULT_DECISION_OPTS = {mode: :complex,max_level: 6,max_time: 30}
+  DEFAULT_OPTIONS = {thinking_time: 30}
   
   def initialize(input)
     # Initializes the agent data structure given the raw input 
@@ -287,6 +287,7 @@ class Agent
     end
     @board = Board.new(input,@action) 
   end
+      
   
   def save_pick(pick)
     File.open("pick.obj","wb") do |f|
@@ -304,21 +305,22 @@ class Agent
     pick
   end
   
-  def score_decision(board,decision,player = @player)
+  def eval_decision(board,decision,player = @player)
     # Determine whether or not the decision ended the game and 
-    # score it.
+    # report on it.
     place,pick = decision
     board.place(*place)
     w = board.winner
-    score = {1 => Score.new,2 => Score.new}
-    if w != 0 && !w.nil?
-      score[w] = Score.new(1)
+    r = Report.new
+    if w == player
+      r.wins += 1
+    elsif w > 0
+      r.losses += 1
     elsif w == 0
-      score[0] = Score.new(1)
-      score[1] = Score.new(1)
+      r.draws += 1
     end
     board.undo
-    score
+    r
   end
   
   def randomize_decision(board = nil,player = @player)
@@ -331,7 +333,49 @@ class Agent
     return [place,pick,score]      
   end
   
-  def decide
+  # TODO Build a decision engine that progressively populates the tree and uses it to make a decision  
+  def decide(options = {})
+    # This version of the decision agent will use iteration as opposed to recursion.  I think this will lead to a cleaner and more efficient implementation do to the asymmetry in recursion that plagued my previous attempt.  It will also make it easier to keep track of the thinking time.
+    options = DEFAULT_OPTIONS.merge(options)
+    best_place,best_pick = nil,nil
+    # Operate on a copy of the board in case something goes wrong.
+    b = @board.dup
+    begin
+      # Make a timed decision.
+      Timeout(options[:thinking_time]) do
+        # Create a candidate set of all possible placements and picks.
+        c = {}
+        b.vacancies.each do |v|
+          b.unused.each do |t|
+            c[v,t] = []
+          end
+        end
+        # Initialize the thinking loop.
+        level = 0
+        while best_place.nil?
+          player = @player
+          # Find all winning moves at the current level of depth.
+          w = []
+          c.each_pair do |k,v|
+            r = eval_decision(b,k,player)
+            w << [k,v] if r.wins == 1
+          end
+          if !w.empty?
+            # There are one or more ways for us to win during this turn.  If we are at level 0, then just pick one and go for it.  However, if we are not at level 0, then we must evaluate whether or not a root-level move resulted in at least one way for us to win.
+            
+            
+          end
+          
+          
+          
+        end
+      end
+    rescue Timeout::Error
+      # Handle a timeout.
+      warn "Thinking time expired."
+      # Based on what we learned, determine the best possible decision that can be made.
+    end
+    
     
   end
       
@@ -361,8 +405,7 @@ class Agent
     when :place
       n = @board.vacancies.length 
       max_level = n >= 11 ? 1 : n >= 7 ? 2 : n >= 5 ? 7 : 8
-      place,pick,score = decide(@board,Time.now,0,
-      max_time: 10, max_level: max_level)
+      place,pick,score = decide(max_time: 10)
       
       j,k = place
       save_pick(pick)

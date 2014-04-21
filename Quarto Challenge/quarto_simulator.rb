@@ -25,7 +25,6 @@ class Game
     @board = Board.new
     @player = 1
     @agents = agent_names.collect{|s| Agent.new(@@fdir + s)}
-    @board.next_piece = nil
   end
   
   def execute_turn(agent,f_pick_only = false)
@@ -44,7 +43,9 @@ class Game
     end
     
     if !@board.game_over?
-      # Call on the agent to make a PICK decision.
+      # Call on the agent to make a PICK decision.  
+      puts "" + @board
+          
       puts "#{@player}\nPICK\n" << @board
       t0 = Time.now
       output = agent.execute("#{@player}\nPICK\n" << @board)
@@ -57,11 +58,11 @@ class Game
   end
   
   def play
-    # Begin the game by having player 2 select the piece that 
-    # player 1 will play.
-    @player = 2
-    execute_turn(@agents[1],true)
+    # Begin the game by having player 1 select the piece that 
+    # player 2 will play.
     @player = 1
+    execute_turn(@agents[@player-1],true)
+    @player = 2
     
     # Play the game until it is over.
     until @board.game_over? do
@@ -81,8 +82,8 @@ class Game
   end
 end
 
-agent1 = "quarto_agent.rb"
-agent2 = agent1.dup
+agent1 = "solution_000.rb"
+agent2 = "solution_001.rb"
 game = Game.new([agent1,agent2])
 game.play
 

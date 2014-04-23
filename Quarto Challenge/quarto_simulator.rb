@@ -82,7 +82,7 @@ class Game
   end
 end
 
-agent1 = "solution_000.rb"
+agent1 = "solution_001.rb"
 agent2 = "solution_001.rb"
 game = Game.new([agent1,agent2])
 game.play

@@ -1,6 +1,4 @@
 #!/usr/bin/env ruby
-require 'set'
-
 class Fixnum
   def similar?(piece)
     # This method determines whether or not a piece has at least
@@ -170,6 +168,7 @@ class Board
       end
     end
     if !@p.include?(piece)
+      warn self
       raise "Piece #{piece ? piece : "<nil>"} is not available to be played."
     end
     # Remove the piece from the list of playable pieces.
@@ -226,7 +225,7 @@ class Board
         i = @@w.find_index{|c| c.collect{|j,k| @b[j][k]}.similar?}
         warn "#{@@w[i].collect{|j,k| @b[j][k]}}"
       end
-      return @p.length.odd? ? 1 : 2 # Since player 2 went first.
+      return vacancies.length.odd? ? 2 : 1 # Since player 2 went first.
     end
     
     # The game was tied.
@@ -240,8 +239,8 @@ class Board
   def game_over?
     # Returns a boolean value indicating whether or not the game 
     # has ended.
-    return true if @p.length == 0
-    return !winner.nil?
+    return true if @p.length == 0 && !@next_piece
+    return !self.winner.nil?
   end
   
   def unused
@@ -277,11 +276,28 @@ class Board
     @b[j][k]
   end
   
+  def each_place
+    # RANDOMLY iterate over each possible placement.
+    return self.to_enum(:each_place) if !block_given?
+    vacancies.shuffle.each do |place|
+      yield place
+    end      
+  end
+  
+  def each_piece
+    # Iterate over each possible piece that can be placed on the board, excluding the 
+    # next piece.
+    return self.to_enum(:each_piece) if !block_given? 
+    @p.shuffle.each do |pick|
+      yield pick
+    end
+  end
+  
   def each
     # Iterate over every possible move that can be made.
     return self.to_enum if !block_given? 
-    vacancies.each do |place|
-      @p.each do |pick|
+    self.each_place do |place|
+      self.each_piece do |pick|
         yield Decision.new(place,pick)
       end
     end      
@@ -290,9 +306,48 @@ class Board
   def to_s
     # Pretty prints the board to a string.
     s = "Board: \n"
-    @b.each{|r| s << "  " << r.to_s << "\n"}
-    s << "Unused Pieces: \n  #{@p.to_a}\n"
-    s << "Next Piece: #{@next_piece ? @next_piece : "<none>"}"
+
+    @b.each_with_index do |r,i| 
+      # Print bits 3 and 2 for each element in the current row.
+      s << "  "
+      r.each_with_index do |e,i| 
+        s << (e < 0 ? "X X" : ("%02b" % ((e & 12) >> 2)).split("").join(" "))
+        s << "   " if i < 3
+      end
+      s << "\n"
+      
+      # Print bits 1 and 0 for each element in the current row.
+      s << "  "
+      r.each_with_index do |e,i|
+        s << (e < 0 ? "X X" : ("%02b" % (e & 3)).split("").join(" ")) 
+        s << "   " if i < 3
+      end
+      s << "\n" 
+      s << "\n" if i < 3
+    end
+
+    s << "Unused Pieces: \n"
+  
+    @p.each_slice(4) do |r|
+      s << "  "
+      r.each_with_index do |e,i| 
+        # Print bits 3 and 2 for each element in the current row.
+        s << ("%02b" % ((e & 12) >> 2)).split("").join(" ") << "   "
+      end
+      s << "\n  "
+      r.each_with_index do |e,i|     
+        s << ("%02b" % (e & 3)).split("").join(" ") << "   "
+      end
+      s << "\n\n"
+    end
+    s << "Next Piece: \n"
+    if @next_piece
+      s << "  " << ("%02b" % ((@next_piece & 12) >> 2)).split("").join(" ") << "\n"
+      s << "  " << ("%02b" % (@next_piece & 3)).split("").join(" ")
+    else
+      s << "<none>"
+    end
+    s << "\n"
   end
   
   def to_str
@@ -663,32 +718,10 @@ class DecisionTree < Tree
     reports
   end
 end
-# 
-# 
-b = Board.new
-b.next_piece = 0
-
-# b.place(0,0)
-# b.next_piece = 1
-# b.place(1,1)
-# b.next_piece = 12
+ 
+# b = Board.new
+# b[0,0] = "0000".to_i(2)
+# b[2,2] = "0011".to_i(2)
+# b.next_piece = "0010".to_i(2)
+# b.place(1,0)
 # puts b
-# puts "#{b.moves}"
-# 
-# b.undo(3)
-# puts b
-# puts "#{b.moves}"
-
-# 
-# t = DecisionTree.new(b)
-# t.data = DecisionNode.new(b,Decision.new(nil,0))
-# nodes = [t]
-# nodes << Tree.new(DecisionNode.new(b,Decision.new([3,3],1)),t)
-# nodes << Tree.new(DecisionNode.new(b,Decision.new([0,0],2)),nodes[1])
-# nodes << Tree.new(DecisionNode.new(b,Decision.new([1,1],15)),nodes[1])
-# #puts nodes
-# 
-# t.activate_node(nodes[3])
-# puts "#{b}, moves: #{b.moves}"
-# puts t
-# puts t.levels.length

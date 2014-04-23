@@ -191,7 +191,7 @@ class Board
     # => p @@w.collect{|c| c.collect{|j,k| @b[j][k]}.similar?}
     if @@w.any?{|c| c.collect{|j,k| @b[j][k]}.similar?}
       # There is a clear winner.
-      return @p.length.odd? ? 1 : 2
+      return vacancies.length.odd? ? 2 : 1 # Since player 2 went first.
     end
     
     # The game was tied.
@@ -202,7 +202,7 @@ class Board
   def game_over?
     # Returns a boolean value indicating whether or not the game 
     # has ended.
-    return true if @p.length == 0
+    return true if @p.length == 0 && !@next_piece
     return !winner.nil?
   end
   

@@ -2,8 +2,11 @@
 require_relative 'quarto_board'
 
 class Agent
-  def initialize(pathname)
+  def initialize(pathname,mode = nil)
     @cmd = pathname.gsub(/ /,"\\ ")
+    if mode == :quiet
+      @cmd += " 2>/dev/null"
+    end
   end
   
   def execute(input)
@@ -24,7 +27,8 @@ class Game
     # Initialize the board and the starting player.
     @board = Board.new
     @player = 1
-    @agents = agent_names.collect{|s| Agent.new(@@fdir + s)}
+    @agents = [Agent.new(@@fdir + agent_names[0]),
+    Agent.new(@@fdir + agent_names[1],:quiet)]
   end
   
   def execute_turn(agent,f_pick_only = false)
@@ -66,11 +70,11 @@ class Game
     
     # Play the game until it is over.
     until @board.game_over? do
-      puts "#{@board}\n\n"
+      puts "\n#{@board}\n\n"
       execute_turn(@agents[@player-1])
       @player = 3 - @player
     end
-    puts "#{@board}\n\n"
+    puts "\n#{@board}\n\n"
     
     winner = @board.winner
     puts "Game over."
@@ -82,8 +86,8 @@ class Game
   end
 end
 
-agent1 = "solution_001.rb"
-agent2 = "solution_001.rb"
+agent1 = "solution_003.rb"
+agent2 = "solution_002.rb"
 game = Game.new([agent1,agent2])
 game.play
 

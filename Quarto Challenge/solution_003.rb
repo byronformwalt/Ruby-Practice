@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
-
 require 'set'
+require 'timeout'
 
 class Fixnum
   def similar?(piece = nil)
@@ -714,3 +714,338 @@ class DecisionTree < Tree
   end
 end
 
+
+class Agent
+  MAX_RUNTIME = 5   # Max amount of time to think per decision (s).
+  Report = Struct.new(:wins,:losses,:draws)
+  ACTIONS = Set.new([:pick,:place])
+  DEFAULT_OPTIONS = {thinking_time: 30}
+  
+  def initialize(input)
+    # Initializes the agent data structure given the raw input 
+    # provided by the external game engine.
+    @player = input.shift.to_i
+    @action = input.shift
+    if !@action.nil?
+      @action = @action.downcase.to_sym
+      @action = nil if !ACTIONS.member?(@action)
+    end
+    @board = Board.new(input,@action) 
+  end
+       
+  def save_pick(pick)
+    File.open("pick.obj","wb") do |f|
+      f.write(Marshal.dump(pick))
+      f.close
+    end  
+  end
+  
+  def load_pick
+    pick = nil
+    File.open("pick.obj","rb") do |f|
+      pick = Marshal.load(f)
+      f.close
+    end
+    pick
+  end
+  
+  def eval_decision(node,max_level,level = 1)
+    # Determine whether or not the decision ended the game and 
+    # report on it.
+
+    # Check whether or not this node has any children.  If so, evaluate them first.
+    if !node.has_children?
+      # Since this node has no children, simply return the score of the node.
+      if !node.data.complete
+        # Except when the decision was incomplete.
+        node.data.score = -0.025 #-0.15
+      end
+    else
+      scores = node.each_child.collect do |child|
+        eval_decision(child,max_level,level+1).to_f
+      end
+      if level.odd?
+        if level == 1
+          score = scores.mean
+        else
+          score = scores.mean
+        end
+      else
+        score = scores.min
+      end
+      node.data.score = score
+    end
+    node.data.score
+  end
+  
+  def randomize_decision(board = @board, player = @player)
+    p = board.vacancies
+    place = p[rand(p.length)]
+    u = board.unused
+    pick = u[rand(u.length)]
+    return Decision.new(place,pick)      
+  end
+  
+  def evaluate_places(board)
+    # Returns nil unless a particular placement will win the game.
+    board.each_place do |place|
+      board.place(*place)
+      w = board.winner
+      board.undo
+      return place if w
+    end
+    nil
+  end
+  
+  def add_nodes(board,parent,f_show = false)
+    # Adds all nodes for place and subsequent pick decisions for the next player to move.
+    node_count = 0
+    if f_show
+      warn parent
+    end
+    board.each do |decision|
+      Tree.new(DecisionNode.new(board,decision),parent)
+      node_count += 1
+    end
+    if f_show
+      warn parent
+    end    
+    node_count
+  end
+  
+  def decide(options = {})
+    # This version of the decision agent will use iteration as opposed to recursion.  I think this will lead to a cleaner and more efficient implementation do to the asymmetry in recursion that plagued my previous attempt.  It will also make it easier to keep track of the thinking time.
+    player = @player
+    opponent = 3 - player
+        
+    # If there is only one move left to make, then just make it.
+    v = @board.vacancies
+    if v.length == 1
+      warn "Playing the final piece on the board."
+      return Decision.new(v[0],nil)
+    end
+    
+    # If the board is empty, then place the piece at (0,0) and pick the opposite piece.
+    if @board.empty?
+      return Decision.new([0,0],15 - @board.next_piece)
+    end
+    
+    # If this there is only one piece already on the board, put this one either in (0,0) or in (0,1), whichever is available
+    if @board.vacancies.length == 15      
+      place = @board.vacant?(3,3) ? [3,3] : [3,2]
+      desired_pick = 15 - @board.next_piece
+      h = @board.unused.find_similar([desired_pick])
+      if h.empty?
+        pick = @board.unused.sample
+      else
+        pick = h[h.keys.max].sample
+      end
+      return Decision.new(place,pick) 
+    end
+    
+    # If we are asked to place the third piece on the board and (2,2) is vacant, then place it there.
+    if @board.vacancies.length == 14 && @board.vacant?(1,1)
+      place = [1,1]
+      desired_pick = 15 - @board.next_piece
+      h = @board.unused.find_similar([desired_pick])
+      if h.empty?
+        pick = @board.unused.sample
+      else
+        pick = h[h.keys.max].sample
+      end
+      return Decision.new(place,pick) 
+    end      
+          
+    # Validate and merge options.
+    bad_opts = options.find_all do |k,v| 
+      !DEFAULT_OPTIONS.has_key?(k)
+    end.collect{|k,v| k}
+    if !bad_opts.empty?
+      warn "Ignoring unrecognized option(s) #{bad_opts} provided to " +
+      "#{self.class}##{__method__}."
+    end    
+    options = DEFAULT_OPTIONS.merge(options)
+
+    # Operate on a copy of the board in case something goes wrong.
+    b = @board.dup
+    best_place,best_pick = nil,nil
+    # Create a decision tree.
+    t = DecisionTree.new(b)
+    t.data = DecisionNode.new(b)
+    level = 1
+    nodes_examined = 0
+    level_nodes_examined = 0
+    # Make a timed decision.
+    t0 = Time.now
+    timed_out = false
+        
+    # Initialize the thinking loop... iterate over each level until the time expires.
+    while true
+      warn "Level #{level}"
+      level_nodes_examined = 0
+      # Iterate over all the nodes from the previous level in the tree.
+      f_first = true
+      t.levels[level-1].each do |parent|
+        t.activate_node(parent)
+        if level.odd? # For odd-levels examine our own decisions.
+          # First, look at just possible placements to see if any placement will win the game.
+          best_place = evaluate_places(b)
+          if best_place
+            if level == 1
+              warn "A winning situation was found"
+              return Decision.new(best_place,nil)
+            else
+              # Mark the parent node responsible for this decision in the as a win for us.
+              parent.data.score = 1.0
+              parent.data.complete = true
+            end
+          else
+            # Since there was no way to win, populate nodes under the parent for each possible decision.
+            level_nodes_examined += add_nodes(b,parent,false) if !timed_out
+          end
+        else # For even levels, examine our opponent's decisions.
+          best_place = evaluate_places(b)
+          if best_place
+            # Mark the parent node responsible for this decision in the as a win for us.
+            parent.data.score = -1.0
+            parent.data.complete = true
+          else
+            # Since there was no way for our opponent to win, populate nodes under the parent for each possible decision.
+            level_nodes_examined += add_nodes(b,parent) if !timed_out
+          end
+        end
+        t.deactivate_node
+      end
+      nodes_examined += level_nodes_examined
+      break if timed_out
+      
+      # Forecast the time required to complete the next level based on how long this level took.
+      time_used = Time.now - t0
+      time_per_node = time_used/nodes_examined
+      
+      if !t.levels[level]
+        warn "Maximum level of analysis reached."
+        break
+      end
+      
+      warn "Level #{level} analysis complete."
+      vl = b.vacancies.length
+      if vl == 0
+        warn "Maximum level achieved."
+        break
+      elsif vl == 1
+        nodes_for_next_level = 1
+      else
+        nodes_for_next_level = ((b.vacancies.length - level)**2)*(t.levels[level].length)
+      end
+      time_for_next_level = nodes_for_next_level*time_per_node
+      time_remaining = options[:thinking_time] - time_used
+      warn level
+      warn t.levels[level].length
+      warn "Nodes for next level: #{nodes_for_next_level}"
+
+      warn "Last level I examined #{level_nodes_examined} nodes."
+      warn "Estimated time to complete the next level is #{time_for_next_level} s."
+      warn "I have #{time_remaining} s more to think."
+      if time_remaining < time_for_next_level
+        timed_out = true
+        if time_remaining > time_for_next_level/4        
+          warn "Just enough time to do a quick scan at next level due to lack of time."
+        else
+          warn "Not enough time to scan the next level. Aborting..."
+          break
+        end
+      end
+      warn "="*50
+      level += 1
+      warn ""
+    end
+
+    # Score each possible decision based on future outcomes of the game.
+    c = {}
+    v = -1
+    best_child = nil
+    t.each_child do |child|
+      decision = child.data.decision
+      child.data.score = eval_decision(child,level)
+      c[decision] = eval_decision(child,level)
+      if c[decision] > v
+        v = c[decision]
+        best_child = child
+      end
+    end
+    
+    #warn "v: #{v}"
+    #warn "best_child: #{best_child}"
+    
+    # best_child.each_child do |child|
+    #   warn child
+    # end
+    
+    if c.empty?
+      warn "All outcomes are indeterminate.  Randomizing decision."
+      return randomize_decision
+    end
+    
+    # Find the best decision.
+    best_score = c.values.find_all{|v| v > -1.0}.max
+    if !best_score
+      warn "All decisions lead to a loss."
+      return randomize_decision
+    end
+    
+    #c.each{|d| warn "#{d[0]} => #{d[1]}"}
+    warn "\nBest Score: #{best_score}"    
+    decisions = c.find_all{|decision,score| score == best_score}
+    decisions.each{|d| warn d[0]}
+    warn " "
+    
+    # Act on the best decision.
+    return decisions.sample[0]
+  end
+      
+  def execute
+    # Based on the current state of the game, this method determines
+    # how to optimally respond to the external game engine.  This
+    # method will execute both place and pick decisions 
+    # simultaneously when a placement is requested.  In this case,
+    # the agent will store its pick decision on disk for recall
+    # later on when it receives a request to make a pick decision.
+    @f_abandon_analysis = false
+    
+    if @board.winner(true)
+      raise "The game is already over."
+    end
+    
+    case @action
+    when :pick
+      if @board.empty?
+        # Pick any piece at random if we are player 2 and the board 
+        # is empty.
+        u = @board.unused
+        pick = u[rand(u.length)]
+        puts "#{pick}"
+        return
+      else
+        # Whenever we place a piece, we also picked the next one 
+        # and we saved it to disk.  Reload our decision.        
+        pick = load_pick
+        puts pick
+      end
+    when :place
+      n = @board.vacancies.length 
+      d = decide(thinking_time: 9)
+      j,k = d.place
+      save_pick(d.pick)
+      warn @board
+      puts "#{j} #{k}"
+    else
+      raise "Invalid action '#{@action}' specified."
+    end
+  end
+  
+end
+
+input = $stdin.each_line.collect{|l| l.chomp}
+agent = Agent.new(input)
+agent.execute

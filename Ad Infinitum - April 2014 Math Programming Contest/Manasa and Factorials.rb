@@ -8,26 +8,23 @@ include Math
 # 2
 # 3
 # 40")
+# 
 
 nt = $stdin.gets.to_i
 a = $stdin.each_line.collect{|l| l.to_i}
 a.each do |n|
-  tens = 0
-  x = 0
-  while tens < n do
-    x += 1
-    if x % 5 == 0
-      r = (log(x)/log(5)).floor
-      new_tens = 0
-      1.upto(r) do |i|
-        y = x.to_f/5**i
-        if y == y.floor
-          tens += 1
-        else
-          break
-        end
-      end
-    end
-  end
+  
+  # Start by assuming that no number has more than one factor of five.
+  x_max = n*5
+  
+  # Find the greatest power of five less than or equal to x_max.
+  r = (log(x_max)/log(5)).floor
+  
+  # Compute the extraneous factors of 5.
+  n_extra = r*(r+1)/2 - 1
+  
+  # Compensate for extraneous factors of 5.
+  x = (n - n_extra)*5
+  
   puts x
 end

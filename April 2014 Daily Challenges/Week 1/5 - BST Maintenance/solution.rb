@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-$stdin = 
-"8
-4 7 3 1 8 2 6 5"
+# $stdin = 
+# "8
+# 4 7 3 1 8 2 6 5"
 
 s = $stdin.each_line.collect{|l| l.chomp}
 n = s[0].to_i
@@ -125,7 +125,7 @@ end
 
 t = Tree.new(a[0])
 b = [t]
-
+puts 0
 a[1..-1].collect do |v| 
   b << t.add_node(v)
   puts b.combination(2).inject(0){|t,v| t += v[0].dist(v[1])}
